@@ -1,0 +1,1 @@
+AppointmentID,CreatedAt,CustomerName,CustomerPhone,CustomerEmail,PropertyID,PropertyTitle,PropertyLocation,PreferredDate,PreferredTime,Status,AssignedAgent,CustomerEmailStatus,AdminEmailStatus

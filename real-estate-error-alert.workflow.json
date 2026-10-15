@@ -1,0 +1,62 @@
+{
+  "name": "Real Estate Agent - Error Alert",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "9246f97f-f655-4203-ac1e-fb17ecf29e73",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "admin@example.com",
+        "subject": "=n8n workflow failed: {{ $json.workflow.name }}",
+        "emailType": "html",
+        "message": "=<p><b>Workflow:</b> {{ $json.workflow.name }}</p><p><b>Failed node:</b> {{ $json.execution.lastNodeExecuted }}</p><p><b>Error:</b> {{ $json.execution.error.message }}</p><p><a href=\"{{ $json.execution.url }}\">Open execution</a></p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "a02520b1-4b74-4ae2-85b3-e815d89788d5",
+      "name": "Email Admin",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        260,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_ME",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Email Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

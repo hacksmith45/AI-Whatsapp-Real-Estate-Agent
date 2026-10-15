@@ -1,0 +1,1548 @@
+{
+  "name": "Real Estate WhatsApp AI Agent (local n8n + Ollama)",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6e9f4967-addc-4219-8eb3-d848a545c40e",
+              "name": "businessName",
+              "value": "Prime Plots Realty",
+              "type": "string"
+            },
+            {
+              "id": "e9ec13fd-870d-4029-b609-da445153aff0",
+              "name": "verifyToken",
+              "value": "change-this-verify-token",
+              "type": "string"
+            },
+            {
+              "id": "83124614-4cb7-4d4d-bcb3-d12165ff2880",
+              "name": "sheetId",
+              "value": "PASTE_YOUR_GOOGLE_SHEET_ID_HERE",
+              "type": "string"
+            },
+            {
+              "id": "c0113d2d-5de6-480b-9826-dd457c323119",
+              "name": "phoneNumberId",
+              "value": "PASTE_YOUR_WHATSAPP_PHONE_NUMBER_ID",
+              "type": "string"
+            },
+            {
+              "id": "29a1b19c-9124-451c-836b-a41e187087a4",
+              "name": "graphApiVersion",
+              "value": "v23.0",
+              "type": "string"
+            },
+            {
+              "id": "0e74f0c7-b7fa-4096-b98a-59fd8cb5c506",
+              "name": "adminEmail",
+              "value": "admin@example.com",
+              "type": "string"
+            },
+            {
+              "id": "a77491ab-39dd-4899-8a6c-e25933705120",
+              "name": "ollamaUrl",
+              "value": "http://localhost:11434",
+              "type": "string"
+            },
+            {
+              "id": "7fe8d039-cd93-4ee0-a052-c30ec06e8e24",
+              "name": "ollamaModel",
+              "value": "qwen2.5:3b",
+              "type": "string"
+            },
+            {
+              "id": "2c505fcf-a842-45ea-a9d6-4d5cd1257330",
+              "name": "timezone",
+              "value": "Africa/Lagos",
+              "type": "string"
+            },
+            {
+              "id": "74aa0198-1999-4026-ae5a-2907c660f5f0",
+              "name": "dateOrder",
+              "value": "DMY",
+              "type": "string"
+            },
+            {
+              "id": "8f833654-f563-4af4-b443-a794abc42e3d",
+              "name": "maxResults",
+              "value": 5,
+              "type": "number"
+            },
+            {
+              "id": "788e5c06-39fd-4a52-baf6-ff2fd6fb2eb7",
+              "name": "ranking",
+              "value": "price_asc",
+              "type": "string"
+            },
+            {
+              "id": "cc7154bc-71a9-45f0-aca0-17e8ba04f6a0",
+              "name": "sendImages",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "4ff730ad-ef79-40d3-918e-785c83aaac6c",
+              "name": "visitDays",
+              "value": "1,2,3,4,5,6",
+              "type": "string"
+            },
+            {
+              "id": "7a4f3928-49d2-4b14-8db5-9b55d4fe07e3",
+              "name": "visitEarliest",
+              "value": "09:00",
+              "type": "string"
+            },
+            {
+              "id": "0a849d52-8905-44f4-93ac-2ebf8c965ca3",
+              "name": "visitLatest",
+              "value": "18:00",
+              "type": "string"
+            },
+            {
+              "id": "fcef4c21-0ae6-427c-b5ff-e1e6b6cad4fa",
+              "name": "maxAdvanceDays",
+              "value": 90,
+              "type": "number"
+            },
+            {
+              "id": "55029253-de12-49b8-8283-f7df13bc6785",
+              "name": "sessionTimeoutMinutes",
+              "value": 720,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "e00ae9b8-89e3-4306-909b-7c48f88310d6",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        300,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "whatsapp",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "73ceb6cf-cd73-48f1-b4d4-e20e8550a9ae",
+      "name": "WhatsApp Verify (GET)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        40,
+        20
+      ],
+      "webhookId": "c6e335b3-daf0-484e-ba1e-772c159fdf01"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "46102aab-0943-4a31-860e-1f3a4c9bd251",
+      "name": "WhatsApp Webhook (POST)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        40,
+        300
+      ],
+      "webhookId": "177f92c7-7c1b-4638-b78a-b71bed105c80"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "03758cb7-fe2f-4faf-b605-c0151b775200",
+              "leftValue": "={{ $json.query && $json.query['hub.mode'] ? 'yes' : 'no' }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4f22fd5b-7efc-4924-89f5-ca0898289767",
+      "name": "Is Verification?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        540,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8422e7da-29f6-4e8c-af51-03e6d24faa61",
+              "leftValue": "={{ $json.query['hub.mode'] }}",
+              "rightValue": "subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "1e0b0a7f-5382-44b3-ace1-1800cc5ed465",
+              "leftValue": "={{ $json.query['hub.verify_token'] }}",
+              "rightValue": "={{ $json.verifyToken }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d908b932-700f-4bb4-b427-714d4268dab4",
+      "name": "Verify Token OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        780,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "235f4f22-9819-4dc9-9594-140e763c7913",
+      "name": "Respond Challenge",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1020,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Forbidden",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "id": "a507bfce-ad2c-42e2-98a7-55dac3c935be",
+      "name": "Respond Forbidden",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1020,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Incoming: extract one WhatsApp message from the Meta webhook payload,\n// drop status callbacks / own messages / duplicates.\nconst cfg = $('Config').first().json;\nconst body = $input.first().json.body || {};\nconst entries = Array.isArray(body.entry) ? body.entry : [];\nlet value = null, msg = null;\nfor (const e of entries) {\n  for (const c of (e.changes || [])) {\n    const v = c && c.value;\n    if (v && Array.isArray(v.messages) && v.messages.length) { value = v; msg = v.messages[0]; break; }\n  }\n  if (msg) break;\n}\nif (!msg) return [];            // delivery / read status callbacks, etc.\n\nconst metadata = value.metadata || {};\nif (cfg.phoneNumberId && metadata.phone_number_id &&\n    String(metadata.phone_number_id) !== String(cfg.phoneNumberId)) return [];   // event for another number\n\nconst from = String(msg.from || '').replace(/\\D/g, '');\nconst ownDigits = String(metadata.display_phone_number || '').replace(/\\D/g, '');\nif (!from || (ownDigits && from === ownDigits)) return [];                       // ignore our own number\n\n// Duplicate-delivery protection (Meta retries webhooks)\nconst sd = $getWorkflowStaticData('global');\nif (!sd.processed) sd.processed = {};\nconst nowMs = Date.now();\nfor (const k of Object.keys(sd.processed)) {\n  if (nowMs - sd.processed[k] > 48 * 3600 * 1000) delete sd.processed[k];\n}\nif (msg.id && sd.processed[msg.id]) return [];\nif (msg.id) sd.processed[msg.id] = nowMs;\n\nlet text = '';\nconst t = msg.type;\nif (t === 'text') text = (msg.text && msg.text.body) || '';\nelse if (t === 'interactive') {\n  const i = msg.interactive || {};\n  text = (i.button_reply && i.button_reply.title) || (i.list_reply && i.list_reply.title) || '';\n} else if (t === 'button') text = (msg.button && (msg.button.text || msg.button.payload)) || '';\ntext = String(text).replace(/\\s+/g, ' ').trim().slice(0, 1000);\n\nconst contact = (value.contacts || [])[0] || {};\nreturn [{ json: {\n  from,\n  name: (contact.profile && contact.profile.name) || '',\n  messageId: msg.id || '',\n  type: t,\n  text,\n  unsupported: !text,\n  timestamp: msg.timestamp || ''\n} }];"
+      },
+      "id": "6654cba4-094f-4d59-901c-bd849ce008f9",
+      "name": "Parse Incoming",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.sheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ConversationState",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "3b2cc902-6587-4623-a802-99d629c9883f",
+      "name": "Read Conversation State",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1020,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.sheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Customers",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "c3e3d58d-e910-4307-8f96-c2a9d0865f31",
+      "name": "Read Customers",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1260,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.sheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Properties",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "49379a58-2f88-4492-a312-5c8581f1fb2d",
+      "name": "Read Properties",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1500,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Analyze Message: load state/customer/properties, run deterministic parsing,\n// decide whether the LLM is needed and build the Ollama extraction request.\nconst cfg = $('Config').first().json;\nconst msg = $('Parse Incoming').first().json;\n\nconst norm = v => String(v === undefined || v === null ? '' : v).trim();\nconst digits = v => norm(v).replace(/\\D/g, '');\nconst rows = name => $(name).all().map(i => i.json || {});\nconst numOrNull = v => { if (v === undefined || v === null || norm(v) === '') return null; const n = Number(norm(v).replace(/[^0-9.\\-]/g, '')); return isFinite(n) ? n : null; };\nconst pad = n => String(n).padStart(2, '0');\nconst DAYN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];\nconst MON3 = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];\n\n// ---------- \"now\" in the business timezone ----------\nfunction nowInTz(tz) {\n  try {\n    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());\n    const g = t => (parts.find(p => p.type === t) || {}).value;\n    return { date: `${g('year')}-${g('month')}-${g('day')}`, time: `${g('hour')}:${g('minute')}` };\n  } catch (e) {\n    const d = new Date().toISOString();\n    return { date: d.slice(0, 10), time: d.slice(11, 16) };\n  }\n}\nconst now = nowInTz(cfg.timezone || 'UTC');\n\nconst validYmd = (y, m, d) => { const dt = new Date(Date.UTC(y, m - 1, d)); return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d; };\nconst toYmd = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;\nconst addDays = (ymd, n) => { const [y, m, d] = ymd.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); };\nconst weekdayOf = ymd => { const [y, m, d] = ymd.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)).getUTCDay(); };\n\nfunction normDate(v) {\n  const s = norm(v); if (!s) return '';\n  if (/^\\d{4}-\\d{2}-\\d{2}/.test(s)) return s.slice(0, 10);\n  if (/^\\d{5}(\\.\\d+)?$/.test(s)) return new Date(Date.UTC(1899, 11, 30) + Math.floor(Number(s)) * 86400000).toISOString().slice(0, 10);\n  return s;\n}\nfunction normTime(v) {\n  const s = norm(v); if (!s) return '';\n  if (/^\\d{1,2}:\\d{2}/.test(s)) { const p = s.split(':'); return pad(+p[0]) + ':' + p[1].slice(0, 2); }\n  if (!isNaN(Number(s)) && Number(s) >= 0 && Number(s) < 1) { const mins = Math.round(Number(s) * 1440); return pad(Math.floor(mins / 60)) + ':' + pad(mins % 60); }\n  return s;\n}\n\n// ---------- state / customer / properties ----------\nconst sr = rows('Read Conversation State').find(r => digits(r.CustomerPhone) && digits(r.CustomerPhone) === msg.from) || {};\nlet lastCriteria = null;\ntry { lastCriteria = sr.LastCriteria ? JSON.parse(sr.LastCriteria) : null; } catch (e) { lastCriteria = null; }\nconst BOOKING = ['ask_name', 'ask_email', 'ask_date', 'ask_time'];\nlet state = {\n  stage: norm(sr.Stage) || 'idle',\n  selectedPropertyId: norm(sr.SelectedPropertyID),\n  name: norm(sr.CollectedName), email: norm(sr.CollectedEmail),\n  date: normDate(sr.PreferredDate), time: normTime(sr.PreferredTime),\n  lastResultIds: norm(sr.LastResultIDs).split(',').map(s => s.trim()).filter(Boolean),\n  lastCriteria\n};\nif (norm(sr.LastMessageID) && msg.messageId && norm(sr.LastMessageID) === msg.messageId) return [];  // already handled\n\n// session timeout for half-finished bookings\nlet sessionExpired = false;\nconst timeoutMin = Number(cfg.sessionTimeoutMinutes || 720);\nconst upd = Date.parse(norm(sr.UpdatedAt));\nif (BOOKING.includes(state.stage) && isFinite(upd) && (Date.now() - upd) / 60000 > timeoutMin) {\n  sessionExpired = true;\n  state = Object.assign({}, state, { stage: 'idle', selectedPropertyId: '', name: '', email: '', date: '', time: '' });\n}\n\nconst cr = rows('Read Customers').find(r => digits(r.CustomerPhone) && digits(r.CustomerPhone) === msg.from) || {};\nconst customer = { name: norm(cr.CustomerName), email: norm(cr.Email), budget: norm(cr.Budget), location: norm(cr.PreferredLocation), type: norm(cr.PreferredPropertyType), lastPropertyId: norm(cr.LastPropertyID) };\n\nfunction sizeSqm(s) {\n  const m = norm(s).toLowerCase().replace(/,/g, '').match(/(\\d+(?:\\.\\d+)?)\\s*(sqm|sq\\.?\\s?m|m2|m²|square\\s*met(?:er|re)s?|acres?|hectares?|ha|sqft|sq\\.?\\s?ft|square\\s*feet)?/);\n  if (!m) return null;\n  let n = parseFloat(m[1]); const u = m[2] || 'sqm';\n  if (/acre/.test(u)) n *= 4046.86; else if (/hect|^ha$/.test(u)) n *= 10000; else if (/ft|feet/.test(u)) n *= 0.092903;\n  return Math.round(n);\n}\nconst props = rows('Read Properties').filter(p => norm(p.PropertyID)).map(p => ({\n  id: norm(p.PropertyID), title: norm(p.Title), location: norm(p.Location), area: norm(p.Area),\n  price: numOrNull(p.Price), currency: norm(p.Currency).toUpperCase(), size: norm(p.Size), sizeSqm: sizeSqm(p.Size),\n  type: norm(p.PropertyType), description: norm(p.Description), features: norm(p.Features), status: norm(p.Status),\n  image: norm(p.ImageURL), agent: norm(p.AgentName), agentPhone: norm(p.AgentPhone)\n}));\nconst avail = props.filter(p => /^available$/i.test(p.status));\nconst uniq = arr => Array.from(new Set(arr.filter(Boolean)));\nconst knownLocs = uniq(props.flatMap(p => [p.location, p.area]));\nconst availLocs = uniq(avail.map(p => p.location));\nconst availTypes = uniq(avail.map(p => p.type));\n\n// ---------- deterministic text parsing ----------\nconst text = msg.text;\nconst lower = text.toLowerCase();\nconst emailRe = /[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}/;\n\nconst canonId = id => norm(id).toLowerCase().replace(/[^a-z0-9]/g, '').replace(/^([a-z]+)0+(?=\\d)/, '$1');\nconst idMap = {}; props.forEach(p => { idMap[canonId(p.id)] = p; });\nfunction findPropertyId(t) {\n  const re = /\\b([a-z]{1,4})[\\s\\-#]?0*(\\d{1,6})\\b/gi; let m;\n  while ((m = re.exec(t))) { const key = (m[1] + m[2]).toLowerCase(); if (idMap[key]) return idMap[key].id; }\n  return null;\n}\nfunction optionIndex(t, max) {\n  const s = t.toLowerCase().trim(); let m;\n  if ((m = s.match(/^(?:#|no\\.?\\s*|number\\s*|option\\s*|choice\\s*|plot\\s*|property\\s*|the\\s+)?(\\d)\\s*(?:st|nd|rd|th)?[.!)]?$/)) && +m[1] >= 1 && +m[1] <= max) return +m[1] - 1;\n  if (s.length > 40) return null;\n  if ((m = s.match(/\\b(?:option|number|no\\.?|#|choice|plot|property)\\s*(\\d)\\b/)) && +m[1] >= 1 && +m[1] <= max) return +m[1] - 1;\n  if ((m = s.match(/\\b(first|second|third|fourth|fifth)\\b/))) { const i = ['first','second','third','fourth','fifth'].indexOf(m[1]); if (i < max) return i; }\n  return null;\n}\nfunction cleanName(t) {\n  let s = t.replace(emailRe, ' ').replace(/\\s+/g, ' ').trim();\n  s = s.replace(/^(?:hi|hello|hey)[,!\\s]+/i, '');\n  s = s.replace(/^(?:my name is|my name's|name is|name:|this is|i am|i'm|im|it's|its|call me|you can call me|the name is|book (?:it )?(?:under|for))\\s+/i, '');\n  s = s.replace(/[.!,;:]+$/, '').trim();\n  if (!/^[\\p{L}][\\p{L}\\s.'’\\-]{1,59}$/u.test(s)) return '';\n  if (s.split(/\\s+/).length > 5) return '';\n  if (/^(yes|no|ok|okay|sure|thanks|thank you|hi|hello|hey|cancel|menu|stop|back|help)$/i.test(s)) return '';\n  if (s === s.toLowerCase() || s === s.toUpperCase()) s = s.toLowerCase().replace(/(^|[\\s'’\\-])(\\p{L})/gu, (m, a, b) => a + b.toUpperCase());\n  return s;\n}\n\nfunction parseDate(t) {\n  const s = t.toLowerCase(); const ty = +now.date.slice(0, 4); let m;\n  const dmy = String(cfg.dateOrder || 'DMY').toUpperCase() !== 'MDY';\n  if ((m = s.match(/\\b(20\\d{2})-(\\d{1,2})-(\\d{1,2})\\b/))) { if (validYmd(+m[1], +m[2], +m[3])) return toYmd(+m[1], +m[2], +m[3]); }\n  if ((m = s.match(/\\b(\\d{1,2})[\\/\\-.](\\d{1,2})[\\/\\-.](\\d{4}|\\d{2})\\b/))) {\n    let y = +m[3]; if (y < 100) y += 2000;\n    let d = dmy ? +m[1] : +m[2], mo = dmy ? +m[2] : +m[1];\n    if (!validYmd(y, mo, d)) { const x = d; d = mo; mo = x; }\n    if (validYmd(y, mo, d)) return toYmd(y, mo, d);\n  }\n  if ((m = s.match(/\\b(\\d{1,2})\\/(\\d{1,2})(?![\\d\\/])/))) {\n    let d = dmy ? +m[1] : +m[2], mo = dmy ? +m[2] : +m[1], y = ty;\n    if (!validYmd(y, mo, d)) { const x = d; d = mo; mo = x; }\n    if (validYmd(y, mo, d)) { if (toYmd(y, mo, d) < now.date) y += 1; if (validYmd(y, mo, d)) return toYmd(y, mo, d); }\n  }\n  const MONRE = '(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';\n  const fromMD = (d, mon, yr) => {\n    const mo = MON3.indexOf(mon.slice(0, 3)) + 1; let y = yr ? +yr : ty;\n    if (!validYmd(y, mo, d)) return null;\n    if (!yr && toYmd(y, mo, d) < now.date) y += 1;\n    return validYmd(y, mo, d) ? toYmd(y, mo, d) : null;\n  };\n  let r;\n  if ((m = s.match(new RegExp('\\\\b(\\\\d{1,2})(?:st|nd|rd|th)?\\\\s*(?:of\\\\s+)?' + MONRE + '\\\\b(?:,?\\\\s*(20\\\\d{2}))?', 'i'))) && (r = fromMD(+m[1], m[2], m[3]))) return r;\n  if ((m = s.match(new RegExp('\\\\b' + MONRE + '\\\\.?\\\\s*(\\\\d{1,2})(?:st|nd|rd|th)?\\\\b(?:,?\\\\s*(20\\\\d{2}))?', 'i'))) && (r = fromMD(+m[2], m[1], m[3]))) return r;\n  if (/\\bday after tomorrow\\b/.test(s)) return addDays(now.date, 2);\n  if (/\\btomorrow\\b/.test(s)) return addDays(now.date, 1);\n  if (/\\b(today|tonight)\\b/.test(s)) return now.date;\n  if ((m = s.match(/\\b(?:next|this|coming|on)?\\s*(sun(?:day)?|mon(?:day)?|tue(?:s|sday)?|wed(?:s|nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?)\\b/))) {\n    const idx = ['sun','mon','tue','wed','thu','fri','sat'].indexOf(m[1].slice(0, 3));\n    let diff = (idx - weekdayOf(now.date) + 7) % 7; if (diff === 0) diff = 7;\n    return addDays(now.date, diff);\n  }\n  return null;\n}\nfunction parseTime(t) {\n  const s = t.toLowerCase(); let m;\n  if ((m = s.match(/\\b(\\d{1,2})(?::(\\d{2}))?\\s*([ap])\\.?\\s?m\\b\\.?/))) {\n    let h = +m[1]; const mi = m[2] ? +m[2] : 0;\n    if (h >= 1 && h <= 12 && mi < 60) { if (m[3] === 'p' && h < 12) h += 12; if (m[3] === 'a' && h === 12) h = 0; return `${pad(h)}:${pad(mi)}`; }\n  }\n  if ((m = s.match(/\\b([01]?\\d|2[0-3]):([0-5]\\d)\\b/))) return `${pad(+m[1])}:${m[2]}`;\n  if (/\\b(noon|midday)\\b/.test(s)) return '12:00';\n  return null;\n}\nfunction parseMoney(v) {\n  if (v === undefined || v === null || v === '') return null;\n  if (typeof v === 'number') return isFinite(v) && v > 0 ? v : null;\n  const s = String(v).toLowerCase().replace(/,/g, '').replace(/\\s+/g, '');\n  const m = s.match(/(\\d+(?:\\.\\d+)?)(k|m|mn|million|thousand|b|billion)?/); if (!m) return null;\n  let n = parseFloat(m[1]); const u = m[2];\n  if (u === 'k' || u === 'thousand') n *= 1e3; else if (u === 'm' || u === 'mn' || u === 'million') n *= 1e6; else if (u === 'b' || u === 'billion') n *= 1e9;\n  return n > 0 ? n : null;\n}\nfunction budgetFromText(t) {\n  const re = /([$₦€£])?\\s*(\\d{1,3}(?:,\\d{3})+|\\d+(?:\\.\\d+)?)(?!\\d)\\s*(k|m|mn|million|thousand|billion|b)?(?![a-z0-9])(?!\\s*(?:sqm|sq|m2|square|acre|hectare|bed))/gi; let m;\n  while ((m = re.exec(t))) {\n    const prev = t[m.index - 1]; if (prev && /[a-z]/i.test(prev)) continue;\n    const v = parseMoney(m[2] + (m[3] || ''));\n    if (v && (m[1] || m[3] || v >= 1000)) return v;\n  }\n  return null;\n}\nfunction detectCurrency(t) {\n  const s = t.toLowerCase();\n  if (/₦|\\bngn\\b|naira/.test(s)) return 'NGN';\n  if (/\\$|\\busd\\b|dollars?/.test(s)) return 'USD';\n  if (/€|\\beur\\b|euros?/.test(s)) return 'EUR';\n  if (/£|\\bgbp\\b|pounds?/.test(s)) return 'GBP';\n  return null;\n}\nconst escRe = s => s.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\nfunction findKnownLocation(t) {\n  const s = t.toLowerCase(); let best = null;\n  for (const loc of knownLocs) {\n    if (new RegExp('(^|[^a-z0-9])' + escRe(loc.toLowerCase()) + '($|[^a-z0-9])').test(s) && (!best || loc.length > best.length)) best = loc;\n  }\n  return best;\n}\nfunction findType(t) {\n  const m = t.toLowerCase().match(/\\b(residential|commercial|farm|agricultural|industrial)?\\s*(plot|plots|land|house|houses|apartment|apartments|flat|flats|villa|villas)\\b/);\n  return m ? ((m[1] ? m[1] + ' ' : '') + m[2].replace(/s$/, '')).trim() : null;\n}\nfunction findMinSize(t) {\n  if (!/(at least|minimum|min\\b|bigger than|larger than|more than|over|above|not less than)/i.test(t)) return null;\n  const m = t.toLowerCase().replace(/,/g, '').match(/(\\d+(?:\\.\\d+)?)\\s*(sqm|sq\\.?\\s?m|m2|acres?|hectares?)\\b/);\n  return m ? sizeSqm(m[1] + ' ' + m[2]) : null;\n}\n\nconst cmdText = lower.replace(/[^a-z ]/g, '').trim();\nlet cmd = null;\nif (/^(reset|restart|start over|menu|new search|main menu)$/.test(cmdText)) cmd = 'reset';\nelse if (/^(cancel|cancel booking|stop|exit|quit)$/.test(cmdText)) cmd = 'cancel';\nelse if (/^change (my )?(details|name|email)$/.test(cmdText)) cmd = 'change_details';\nconst isGreeting = /^(hi|hello|hey|hola|howdy|good\\s*(morning|afternoon|evening)|start|help)[\\s!.,?]*$/i.test(text);\n\nconst propertyId = findPropertyId(text);\nconst optIdx = state.stage === 'results_shown' ? optionIndex(text, Math.max(1, state.lastResultIds.length)) : null;\nconst parsed = {\n  email: (text.match(emailRe) || [null])[0] ? text.match(emailRe)[0].toLowerCase() : null,\n  nameCandidate: cleanName(text),\n  date: parseDate(text), time: parseTime(text),\n  propertyId, optionIndex: optIdx,\n  location: findKnownLocation(text), type: findType(text),\n  budget: budgetFromText(text), currency: detectCurrency(text), minSize: findMinSize(text)\n};\n\nconst bookingStage = BOOKING.includes(state.stage);\nconst needsLLM = !msg.unsupported && !bookingStage && !cmd && !isGreeting && !propertyId && !(optIdx !== null && state.lastResultIds[optIdx]);\n\n// ---------- Ollama extraction request ----------\nconst system = [\n  'You are the language-understanding module of a real-estate WhatsApp assistant. You do not chat. You output exactly one JSON object and nothing else.',\n  `Today is ${now.date} (${DAYN[weekdayOf(now.date)]}). Timezone: ${cfg.timezone || 'UTC'}.`,\n  'Return exactly these keys:',\n  '{\"intent\":\"search_property|book_visit|property_question|greeting|general_question|other\",\"location\":null,\"property_type\":null,\"max_budget\":null,\"min_budget\":null,\"currency\":null,\"min_size_sqm\":null,\"property_id\":null,\"visit_date\":null,\"visit_time\":null}',\n  'Rules:',\n  '- intent: search_property = wants to find or buy plots/properties; book_visit = wants to visit, view or book an appointment; property_question = asks about one specific listing; greeting = only says hello; general_question = other questions about the company or the process; other = anything else.',\n  '- location: the place the customer asks for, copied from THEIR message (city, area or neighbourhood). null if the message names no place.',\n  '- property_type: a short phrase such as \"plot\", \"residential plot\", \"house\". null if not stated.',\n  '- max_budget and min_budget: plain numbers. 50k = 50000, 2m or 2 million = 2000000. \"under\", \"up to\", \"below\", \"within\" mean max_budget. null if no budget is stated.',\n  '- currency: ISO code ONLY if the customer explicitly writes a currency or symbol, otherwise null.',\n  '- min_size_sqm: number of square metres only if the customer states a minimum size, else null.',\n  '- property_id: only if the message contains an ID like P001, else null.',\n  '- visit_date (YYYY-MM-DD) and visit_time (HH:MM, 24h): only if the customer gives them. Resolve words like tomorrow or next Friday using today\\'s date.',\n  'Never copy values from these instructions or examples unless the customer wrote them.',\n  `Locations in our database: ${availLocs.join(', ') || 'none'}.`,\n  `Property types in our database: ${availTypes.join(', ') || 'none'}.`,\n  'Example input: I need a plot in Springfield. My budget is $50,000.',\n  'Example output: {\"intent\":\"search_property\",\"location\":\"Springfield\",\"property_type\":\"plot\",\"max_budget\":50000,\"min_budget\":null,\"currency\":\"USD\",\"min_size_sqm\":null,\"property_id\":null,\"visit_date\":null,\"visit_time\":null}',\n  'Example input: hello, what do you do?',\n  'Example output: {\"intent\":\"general_question\",\"location\":null,\"property_type\":null,\"max_budget\":null,\"min_budget\":null,\"currency\":null,\"min_size_sqm\":null,\"property_id\":null,\"visit_date\":null,\"visit_time\":null}'\n].join('\\n');\nconst userMsg = (state.lastResultIds.length ? `The customer was previously shown property IDs: ${state.lastResultIds.join(', ')}.\\n` : '') + `Customer message: ${text}`;\nconst ollamaRequest = {\n  model: cfg.ollamaModel || 'qwen2.5:3b', stream: false, format: 'json', keep_alive: '30m',\n  options: { temperature: 0, num_ctx: 4096, num_predict: 300 },\n  messages: [{ role: 'system', content: system }, { role: 'user', content: userMsg }]\n};\n\nreturn [{ json: {\n  phone: msg.from, profileName: msg.name, messageId: msg.messageId, text, unsupported: !!msg.unsupported,\n  now, state, customer, props, parsed,\n  flags: { isGreeting, cmd, bookingStage, sessionExpired },\n  needsLLM, ollamaRequest\n} }];"
+      },
+      "id": "0c46c0c7-c11f-46f3-a2e1-0d2c82d816f2",
+      "name": "Analyze Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1740,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "47968d3a-7ebc-4459-b301-3f4674ad70bb",
+              "leftValue": "={{ $json.needsLLM }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a92e4799-fb92-4e07-aa2c-5584792c1b53",
+      "name": "Needs LLM?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ String($('Config').first().json.ollamaUrl).replace(/\\/+$/,'') + '/api/chat' }}",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.ollamaRequest) }}",
+        "options": {
+          "timeout": 240000
+        }
+      },
+      "id": "9eb256c6-be60-46d9-944b-c78d883763f3",
+      "name": "Ollama Extract Intent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2220,
+        200
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resolve Action: the conversation state machine. Deterministic; Ollama only\n// supplies extracted fields (and later, friendly wording).\nconst ctx = $('Analyze Message').first().json;\nconst cfg = $('Config').first().json;\nconst props = ctx.props || [];\nconst P = ctx.parsed;\nconst flags = ctx.flags;\nconst now = ctx.now;\nconst phone = ctx.phone;\nconst text = ctx.text;\nconst biz = cfg.businessName || 'our team';\nconst nowIso = new Date().toISOString();\n\nconst norm = v => String(v === undefined || v === null ? '' : v).trim();\nconst pad = n => String(n).padStart(2, '0');\nconst DAYN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];\nconst MONN = ['January','February','March','April','May','June','July','August','September','October','November','December'];\nconst BOOKING = ['ask_name', 'ask_email', 'ask_date', 'ask_time'];\nconst isBooking = s => BOOKING.includes(s);\nconst isAvail = p => !!p && /^available$/i.test(p.status);\nconst canonId = id => norm(id).toLowerCase().replace(/[^a-z0-9]/g, '').replace(/^([a-z]+)0+(?=\\d)/, '$1');\nconst byId = id => props.find(p => canonId(p.id) === canonId(id));\nconst uniq = arr => Array.from(new Set(arr.filter(Boolean)));\nconst avail = props.filter(isAvail);\nconst availLocs = uniq(avail.map(p => p.location));\nconst availTypes = uniq(avail.map(p => p.type));\n\n// ---------- formatting ----------\nconst weekdayOf = ymd => { const [y, m, d] = ymd.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)).getUTCDay(); };\nconst addDays = (ymd, n) => { const [y, m, d] = ymd.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); };\nconst prettyDate = ymd => { const [y, m, d] = ymd.split('-').map(Number); return `${DAYN[weekdayOf(ymd)]}, ${d} ${MONN[m - 1]} ${y}`; };\nconst prettyTime = hm => { let [h, mi] = hm.split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${pad(mi)} ${ap}`; };\nconst SYM = { USD: '$', NGN: '₦', EUR: '€', GBP: '£' };\nconst fmtPrice = (n, c) => { const num = Number(n); if (n === null || !isFinite(num)) return 'Price on request'; const s = num.toLocaleString('en-US', { maximumFractionDigits: 0 }); const cur = (c || '').toUpperCase(); return SYM[cur] ? SYM[cur] + s : (cur ? cur + ' ' + s : s); };\nconst locText = p => (p.area && p.location && !p.area.toLowerCase().includes(p.location.toLowerCase())) ? `${p.area}, ${p.location}` : (p.area || p.location);\n\n// ---------- scheduling rules ----------\nconst allowedDays = String(cfg.visitDays === undefined || cfg.visitDays === '' ? '1,2,3,4,5,6' : cfg.visitDays).split(',').map(s => s.trim()).filter(Boolean).map(Number);\nconst earliest = String(cfg.visitEarliest || '09:00'), latest = String(cfg.visitLatest || '18:00');\nconst maxAdv = Number(cfg.maxAdvanceDays || 90);\nconst dayList = () => (allowedDays.slice().sort().join() === '1,2,3,4,5,6') ? 'Monday to Saturday' : allowedDays.slice().sort().map(d => DAYN[d]).join(', ');\nconst diffDays = (a, b) => { const A = a.split('-').map(Number), B = b.split('-').map(Number); return Math.round((Date.UTC(B[0], B[1] - 1, B[2]) - Date.UTC(A[0], A[1] - 1, A[2])) / 86400000); };\nfunction checkDate(date) {\n  if (date < now.date) return 'That date has already passed. Please choose a future date.';\n  if (diffDays(now.date, date) > maxAdv) return `Please choose a date within the next ${maxAdv} days.`;\n  const wd = weekdayOf(date);\n  if (!allowedDays.includes(wd)) return `We don't schedule viewings on ${DAYN[wd]}s. Viewings are available ${dayList()}.`;\n  return null;\n}\nfunction checkTime(date, time) {\n  if (time < earliest || time > latest) return `Viewings are available between ${prettyTime(earliest)} and ${prettyTime(latest)}. Please pick a time in that window.`;\n  if (date && date === now.date && time <= now.time) return 'That time has already passed today. Please choose a later time.';\n  return null;\n}\nfunction exampleDate() {\n  for (let i = 1; i < 15; i++) { const d = addDays(now.date, i); if (allowedDays.includes(weekdayOf(d))) { const [, m, dd] = d.split('-').map(Number); return `${DAYN[weekdayOf(d)]} ${dd} ${MONN[m - 1]}`; } }\n  return 'tomorrow';\n}\n\n// ---------- LLM output ----------\nfunction readLLM() {\n  if (!ctx.needsLLM) return null;\n  const j = $input.first().json || {};\n  const raw = j.message && j.message.content; if (!raw) return null;\n  try { const o = JSON.parse(raw); return (o && typeof o === 'object') ? o : null; }\n  catch (e) { const m = String(raw).match(/\\{[\\s\\S]*\\}/); if (m) { try { return JSON.parse(m[0]); } catch (e2) { return null; } } return null; }\n}\nconst llm = readLLM();\nconst L = llm || {};\nconst BOOK_RE = /\\b(visit|view|viewing|book|booking|appointment|schedule|inspect|inspection|tour|see (?:it|the|this|that))\\b/i;\nconst DETAILS_RE = /\\b(details?|more info|tell me more|tell me about|information|info|about|how much|price of)\\b/i;\nconst wantsBooking = BOOK_RE.test(text) || L.intent === 'book_visit';\nconst wantsDetails = (DETAILS_RE.test(text) || L.intent === 'property_question') && !BOOK_RE.test(text);\n\nfunction parseMoney(v) {\n  if (v === undefined || v === null || v === '') return null;\n  if (typeof v === 'number') return isFinite(v) && v > 0 ? v : null;\n  const s = String(v).toLowerCase().replace(/,/g, '').replace(/\\s+/g, '');\n  const m = s.match(/(\\d+(?:\\.\\d+)?)(k|m|mn|million|thousand|b|billion)?/); if (!m) return null;\n  let n = parseFloat(m[1]); const u = m[2];\n  if (u === 'k' || u === 'thousand') n *= 1e3; else if (u === 'm' || u === 'mn' || u === 'million') n *= 1e6; else if (u === 'b' || u === 'billion') n *= 1e9;\n  return n > 0 ? n : null;\n}\nconst cleanVal = v => { const s = norm(v); return (!s || /^(null|none|n\\/a|unknown|any|anywhere|undefined)$/i.test(s)) ? null : s; };\nconst words = text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);\nfunction locSupported(loc) {\n  const toks = loc.toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length >= 3);\n  return toks.some(t => words.some(w => w.length >= 3 && (w.startsWith(t.slice(0, 4)) || t.startsWith(w.slice(0, 4)))));\n}\nfunction resolveKnownLoc(loc) {\n  const l = loc.toLowerCase(), all = uniq(props.flatMap(p => [p.location, p.area]));\n  return all.find(k => k.toLowerCase() === l) || all.find(k => { const kl = k.toLowerCase(); return kl.includes(l) || l.includes(kl); }) || loc;\n}\n\n// ---------- state & output ----------\nconst fresh = () => ({ stage: 'idle', selectedPropertyId: '', name: '', email: '', date: '', time: '', lastResultIds: [], lastCriteria: null });\nlet st = Object.assign({}, ctx.state);\nlet crit = null;\nlet prefix = flags.sessionExpired ? '⏳ Your earlier booking session timed out, so I started fresh.\\n\\n' : '';\nconst out = { action: 'reply', messages: [], compose: null, booking: null, ollamaRequest: null };\nconst say = t => { out.messages.push({ type: 'text', body: (prefix + t).slice(0, 4000) }); prefix = ''; };\n\nfunction greeting() {\n  const p0 = avail[0];\n  const ex = p0 ? `${p0.location}, budget ${fmtPrice(Math.ceil((p0.price || 50000) * 1.1 / 1000) * 1000, p0.currency)}` : 'my preferred area, budget 50,000';\n  return `👋 Hello! Welcome to *${biz}*.\\n\\nI can help you find available plots and properties and book an in-person viewing.\\n\\nJust tell me the *location* and your *budget*, for example:\\n_\"I need a plot in ${ex}\"_\\n\\nType *MENU* at any time to start over.`;\n}\n\n// ---------- search ----------\nfunction typeNorm(s) { return norm(s).toLowerCase().replace(/\\b(land|lot|parcel)s?\\b/g, 'plot').replace(/\\b(home|homes)\\b/g, 'house').replace(/\\b(flat|condo)s?\\b/g, 'apartment').replace(/\\b(plot|house|apartment|villa)s\\b/g, '$1'); }\nfunction typeTokens(s) { return typeNorm(s).split(/\\s+/).filter(t => t && !['a','an','the','for','sale','property','properties','in','of'].includes(t)); }\nfunction runSearch(c) {\n  let list = avail.slice();\n  const afterStatus = list.length;\n  let locMatched = list;\n  if (c.location) {\n    const l = c.location.toLowerCase();\n    locMatched = list.filter(p => [p.location, p.area, p.title].some(f => { const x = f.toLowerCase(); return x && (x.includes(l) || l.includes(x)); }));\n    list = locMatched;\n  }\n  if (c.type) { const tk = typeTokens(c.type); if (tk.length) list = list.filter(p => { const pt = typeNorm(p.type); return tk.every(t => pt.includes(t)); }); }\n  const afterType = list;\n  if (c.currency) list = list.filter(p => !p.currency || p.currency === c.currency);\n  if (c.minSize) list = list.filter(p => p.sizeSqm === null || p.sizeSqm >= c.minSize);\n  const typeAndLocOk = list;\n  if (c.max) list = list.filter(p => p.price !== null && p.price <= c.max);\n  if (c.min) list = list.filter(p => p.price !== null && p.price >= c.min);\n  const rank = cfg.ranking || 'price_asc';\n  list.sort((a, b) => rank === 'price_desc' ? (b.price || 0) - (a.price || 0)\n    : (rank === 'closest_to_budget' && c.max) ? (c.max - a.price) - (c.max - b.price)\n    : (a.price || 0) - (b.price || 0));\n  const limit = Math.max(1, Number(cfg.maxResults || 5));\n  return { list: list.slice(0, limit), total: list.length, locMatched, typeAndLocOk, afterStatus };\n}\nfunction listingBlock(list) {\n  return list.map((p, i) => {\n    const lines = [`*${i + 1}. ${p.title || p.type}*`];\n    lines.push(`📍 ${locText(p)}`);\n    lines.push(`💰 ${fmtPrice(p.price, p.currency)}${p.size ? '   📐 ' + p.size : ''}`);\n    if (p.features) lines.push(`✨ ${p.features}`);\n    lines.push(`🆔 ID: ${p.id}`);\n    return lines.join('\\n');\n  }).join('\\n\\n');\n}\nfunction noMatchText(c, res) {\n  const where = c.location ? ` in *${c.location}*` : '';\n  const budget = c.max ? ` within ${fmtPrice(c.max, c.currency || (res.locMatched[0] || {}).currency || '')}` : '';\n  let t;\n  if (c.location && res.locMatched.length === 0) {\n    t = `I couldn't find any available properties${where} right now.`;\n    if (availLocs.length) t += `\\n\\nLocations with current listings: ${availLocs.slice(0, 10).join(', ')}.`;\n    t += '\\n\\nWould you like to try one of those, or a different area?';\n  } else if (res.typeAndLocOk.length && (c.max || c.min)) {\n    const cheapest = res.typeAndLocOk.slice().sort((a, b) => (a.price || 0) - (b.price || 0))[0];\n    t = `I don't have an available match${where}${budget}.\\n\\nThe most affordable option${where} starts at *${fmtPrice(cheapest.price, cheapest.currency)}*. Would you like to increase your budget or look at a nearby location?`;\n  } else {\n    t = `I couldn't find an available property${where} that matches all of your requirements.`;\n    if (availLocs.length) t += `\\n\\nLocations with current listings: ${availLocs.slice(0, 10).join(', ')}.`;\n    t += '\\n\\nWould you like to adjust your budget, property type or location?';\n  }\n  return t;\n}\nfunction buildCriteria() {\n  const c = {\n    location: P.location || null, type: cleanVal(L.property_type) || P.type || null,\n    max: parseMoney(L.max_budget), min: parseMoney(L.min_budget),\n    currency: P.currency || null,\n    minSize: (isFinite(Number(L.min_size_sqm)) && Number(L.min_size_sqm) > 0) ? Number(L.min_size_sqm) : (P.minSize || null)\n  };\n  const lloc = cleanVal(L.location);\n  if (!c.location && lloc && locSupported(lloc)) c.location = resolveKnownLoc(lloc);\n  if (!/\\d/.test(text)) { c.max = null; c.min = null; c.minSize = null; }\n  if (c.max === null && c.min === null && P.budget) c.max = P.budget;\n  if (c.min !== null && c.max !== null && c.min > c.max) { const x = c.min; c.min = c.max; c.max = x; }\n  const last = st.lastCriteria;\n  if (!c.location && last && last.location && (c.max || c.min || c.type || c.minSize)) {\n    c.location = last.location;\n    if (!c.type) c.type = last.type || null;\n    if (!c.currency) c.currency = last.currency || null;\n    if (!c.minSize) c.minSize = last.minSize || null;\n    if (!c.max && !c.min) { c.max = last.max || null; c.min = last.min || null; }\n  }\n  return c;\n}\n\n// ---------- booking collection ----------\nfunction handleBooking() {\n  const prev = st.stage;\n  const selected = byId(st.selectedPropertyId);\n  if (!isAvail(selected)) {\n    st = fresh();\n    say('Sorry, that property is no longer available. 😔 Tell me your preferred location and budget and I\\'ll find other options.');\n    return;\n  }\n  if (flags.cmd === 'change_details' && (prev === 'ask_date' || prev === 'ask_time')) {\n    st.name = ''; st.email = ''; st.stage = 'ask_name';\n    say('Sure! What name should I use for the appointment?');\n    return;\n  }\n  let ackName = '';\n  if (P.email) st.email = P.email;\n  if (prev === 'ask_name' && P.nameCandidate) { st.name = P.nameCandidate; ackName = st.name.split(' ')[0]; }\n  const allowDT = prev !== 'ask_name' || !!P.email;\n  if (allowDT) { if (P.date) st.date = P.date; if (P.time) st.time = P.time; }\n\n  let problem = '';\n  if (st.date) { const e = checkDate(st.date); if (e) { problem = e; st.date = ''; } }\n  if (st.time) { const e = checkTime(st.date || null, st.time); if (e) { problem = e; st.time = ''; } }\n\n  const missing = !st.name ? 'ask_name' : !st.email ? 'ask_email' : !st.date ? 'ask_date' : !st.time ? 'ask_time' : null;\n  if (missing) {\n    st.stage = missing;\n    let lead = problem ? `⚠️ ${problem}\\n\\n` : '';\n    if (!problem && prev === 'ask_name' && !P.nameCandidate) lead = 'Sorry, I didn\\'t catch a valid name. ';\n    if (!problem && prev === 'ask_email' && !P.email) lead = 'That doesn\\'t look like a valid email address. ';\n    if (missing === 'ask_name') say(`${lead}What name should I use for the appointment?`);\n    else if (missing === 'ask_email') say(`${lead}${ackName ? `Thanks, ${ackName}! ` : ''}What's the best email address for your appointment confirmation?`);\n    else if (missing === 'ask_date') {\n      const thanks = (!lead && prev === 'ask_email') ? 'Thanks! ' : '';\n      if (st.time) say(`${lead}${thanks}Got it, ${prettyTime(st.time)}. Which date would you like for the visit? (e.g. *${exampleDate()}*)`);\n      else say(`${lead}${thanks}What date and time would you prefer for the visit? (e.g. *${exampleDate()} at 11:00 AM*)`);\n    } else say(`${lead}${(!lead && st.date) ? `Noted, ${prettyDate(st.date)}. ` : ''}What time would you prefer? Viewings run ${prettyTime(earliest)} to ${prettyTime(latest)}.`);\n    return;\n  }\n  out.action = 'save_booking';\n  out.booking = {\n    propertyId: selected.id, title: selected.title || selected.type, locationText: locText(selected),\n    agent: selected.agent, agentPhone: selected.agentPhone,\n    name: st.name, email: st.email, date: st.date, time: st.time,\n    prettyDate: prettyDate(st.date), prettyTime: prettyTime(st.time)\n  };\n}\n\n// ---------- idle / search flow ----------\nfunction startBooking(sel) {\n  const c = ctx.customer;\n  st.selectedPropertyId = sel.id; st.date = ''; st.time = ''; st.name = ''; st.email = '';\n  if (c.name && c.email) {\n    st.name = c.name; st.email = c.email; st.stage = 'ask_date';\n    say(`Excellent choice! I'll arrange a viewing for *${sel.title || sel.type}* (${sel.id}) under *${c.name}* (${c.email}).\\n\\nWhat date and time would you prefer? (e.g. *${exampleDate()} at 11:00 AM*)\\n\\n_Type *CHANGE DETAILS* to use a different name or email, or *MENU* to start over._`);\n  } else {\n    st.stage = 'ask_name';\n    say(`Absolutely! I can help arrange a viewing for *${sel.title || sel.type}* (${sel.id}). What name should I use for the appointment?\\n\\n_You can type *MENU* at any time to start over._`);\n  }\n}\nfunction showDetails(p) {\n  const lines = [`*${p.title || p.type}*`, `📍 ${locText(p)}`, `💰 ${fmtPrice(p.price, p.currency)}`];\n  if (p.size) lines.push(`📐 ${p.size}`);\n  if (p.type) lines.push(`🏷️ ${p.type}`);\n  if (p.description) lines.push(`\\n${p.description}`);\n  if (p.features) lines.push(`✨ ${p.features}`);\n  lines.push(`\\n🆔 ID: ${p.id}\\nStatus: ${isAvail(p) ? '✅ Available' : '❌ Not available'}`);\n  if (isAvail(p)) lines.push(`\\nWould you like to arrange a visit? Just reply *${p.id}*.`);\n  say(lines.join('\\n'));\n}\nfunction handleIdle() {\n  let sel = null, unknownId = '';\n  if (P.propertyId) sel = byId(P.propertyId);\n  else if (P.optionIndex !== null && st.lastResultIds[P.optionIndex]) sel = byId(st.lastResultIds[P.optionIndex]);\n  else if (cleanVal(L.property_id)) { sel = byId(L.property_id); if (!sel) unknownId = norm(L.property_id); }\n  if (!sel && !unknownId && wantsBooking && st.lastResultIds.length === 1) sel = byId(st.lastResultIds[0]);\n\n  if (sel) {\n    if (wantsDetails) { showDetails(sel); return; }\n    if (!isAvail(sel)) { say(`Sorry, *${sel.title || sel.id}* (${sel.id}) is no longer available. Tell me your location and budget and I'll find alternatives.`); return; }\n    startBooking(sel); return;\n  }\n  if (unknownId) { say(`I couldn't find a property with ID *${unknownId}*. Please check the ID from my list, or tell me the location and budget and I'll search again.`); return; }\n  if (wantsBooking && !(P.location || P.budget)) {\n    say('Happy to arrange a viewing! Which property would you like to visit? Please reply with the *number* (e.g. 1) or the *property ID* (e.g. P001) from my list.\\n\\nIf you haven\\'t seen a list yet, tell me the location and budget and I\\'ll find options.');\n    return;\n  }\n\n  crit = buildCriteria();\n  const intent = L.intent || '';\n  if (crit.location || crit.max || crit.min) {\n    const res = runSearch(crit);\n    st.lastCriteria = crit; st.selectedPropertyId = '';\n    if (!res.list.length) { st.stage = 'idle'; st.lastResultIds = []; say(noMatchText(crit, res)); return; }\n    st.stage = 'results_shown'; st.lastResultIds = res.list.map(p => p.id);\n    const images = (String(cfg.sendImages) === 'true') ? res.list.filter(p => /^https?:\\/\\//i.test(p.image)).map(p => ({ type: 'image', link: p.image, caption: `${p.id} · ${p.title || p.type}` })) : [];\n    out.action = 'llm_reply';\n    out.compose = {\n      kind: 'results', prefix, images, listing: listingBlock(res.list),\n      fallbackIntro: `Here ${res.list.length === 1 ? 'is the best available option' : `are the top ${res.list.length} available options`} that match your request:`,\n      cta: `Would you like to arrange a visit? Reply with ${res.list.length === 1 ? 'the number *1*' : `the *number* (1-${res.list.length})`} or the *property ID* (e.g. *${res.list[0].id}*) and I'll help you book a viewing.`,\n      allowedText: text\n    };\n    prefix = '';\n    out.ollamaRequest = {\n      model: cfg.ollamaModel || 'qwen2.5:3b', stream: false, keep_alive: '30m', options: { temperature: 0.4, num_ctx: 2048, num_predict: 90 },\n      messages: [\n        { role: 'system', content: `You are a warm, concise real-estate assistant for ${biz}, chatting on WhatsApp. Write one or two short, friendly sentences introducing the property results that follow. Do not list or describe properties. Do not mention prices, numbers or property IDs. Plain text only, no markdown.` },\n        { role: 'user', content: `Customer request: \"${text}\". Matching properties found: ${res.list.length}${crit.location ? ' in ' + crit.location : ''}.` }\n      ]\n    };\n    return;\n  }\n  if (intent === 'search_property' || crit.type || crit.minSize) {\n    st.lastCriteria = crit;\n    say(`I'd be happy to help you find ${crit.type ? 'a ' + crit.type : 'a property'}! Which *location* are you interested in, and what's your *budget*?${availLocs.length ? `\\n\\nCurrent listings are in: ${availLocs.slice(0, 10).join(', ')}.` : ''}`);\n    return;\n  }\n  if (intent === 'greeting') { st = fresh(); say(greeting()); return; }\n  if (intent === 'property_question') { say('Which property are you asking about? Please send its ID (e.g. P001) or tell me the location and budget and I\\'ll search.'); return; }\n\n  const days = dayList();\n  const facts = [\n    `- ${biz} helps customers find available plots and properties and book in-person viewings.`,\n    `- Locations with available listings: ${availLocs.join(', ') || 'none right now'}.`,\n    `- Property types: ${availTypes.join(', ') || 'various'}.`,\n    '- To search, the customer sends a location and a budget. To book a viewing, the customer picks a listing number or ID, then gives name, email, date and time.',\n    `- Viewings are available ${days}, between ${prettyTime(earliest)} and ${prettyTime(latest)}.`,\n    '- An agent contacts the customer to confirm every viewing.'\n  ].join('\\n');\n  out.action = 'llm_reply';\n  out.compose = {\n    kind: 'general', prefix,\n    fallback: `I'm not sure I understood that. I can help you find available plots and properties and book a viewing.`,\n    nudge: 'Tell me a *location* and your *budget* and I\\'ll find matching properties. 🏡 (Type *MENU* to start over.)',\n    allowedText: facts + '\\n' + text\n  };\n  prefix = '';\n  out.ollamaRequest = {\n    model: cfg.ollamaModel || 'qwen2.5:3b', stream: false, keep_alive: '30m', options: { temperature: 0.3, num_ctx: 2048, num_predict: 160 },\n    messages: [\n      { role: 'system', content: `You are a friendly WhatsApp assistant for ${biz}, a real-estate company. Use ONLY the facts below. Never invent prices, availability, addresses, legal advice or features. If you do not know something, say an agent will follow up. Answer in under 60 words, plain text, no markdown.\\nFACTS:\\n${facts}` },\n      { role: 'user', content: text }\n    ]\n  };\n}\n\n// ---------- main routing ----------\nif (ctx.unsupported) {\n  say('Sorry, I can only read text messages at the moment. Please type your request, for example the location and budget you have in mind.');\n} else if (flags.cmd === 'reset' || (flags.isGreeting && !isBooking(st.stage))) {\n  st = fresh(); say(greeting());\n} else if (flags.cmd === 'cancel') {\n  if (isBooking(st.stage)) { st = fresh(); say('No problem, I\\'ve cancelled that booking request. Tell me what you\\'re looking for whenever you\\'re ready, or type *MENU* to start over.'); }\n  else { st = fresh(); say(greeting()); }\n} else if (isBooking(st.stage)) {\n  handleBooking();\n} else {\n  handleIdle();\n}\n\n// ---------- rows for Google Sheets ----------\nconst stageLabel = s => isBooking(s) ? 'Booking' : (s === 'completed' ? 'Completed' : 'Search');\nconst stateRowOf = s => ({\n  CustomerPhone: phone, Stage: s.stage, SelectedPropertyID: s.selectedPropertyId || '', CollectedName: s.name || '', CollectedEmail: s.email || '',\n  PreferredDate: s.date || '', PreferredTime: s.time || '', UpdatedAt: nowIso,\n  LastResultIDs: (s.lastResultIds || []).join(','), LastCriteria: s.lastCriteria ? JSON.stringify(s.lastCriteria) : '', LastMessageID: ctx.messageId\n});\nconst c0 = ctx.customer;\nconst customerRowOf = s => ({\n  CustomerPhone: phone,\n  CustomerName: s.name || c0.name || ctx.profileName || '',\n  Email: s.email || c0.email || '',\n  Budget: (crit && crit.max) ? crit.max : c0.budget,\n  PreferredLocation: (crit && crit.location) || c0.location,\n  PreferredPropertyType: (crit && crit.type) || c0.type,\n  LastPropertyID: s.selectedPropertyId || c0.lastPropertyId,\n  ConversationStage: stageLabel(s.stage),\n  LastMessageAt: nowIso\n});\nlet stateRow, customerRow, stateRowRetry = null;\nif (out.action === 'save_booking') {\n  const done = Object.assign({}, st, { stage: 'completed', lastResultIds: [] });\n  stateRow = stateRowOf(done); customerRow = customerRowOf(done);\n  stateRowRetry = stateRowOf(Object.assign({}, st, { stage: 'ask_time', time: '', lastResultIds: [] }));\n} else { stateRow = stateRowOf(st); customerRow = customerRowOf(st); }\n\nreturn [{ json: { action: out.action, phone, messages: out.messages, compose: out.compose, booking: out.booking, ollamaRequest: out.ollamaRequest, stateRow, stateRowRetry, customerRow } }];"
+      },
+      "id": "a47dbe66-6e3b-45a0-9d52-767a2b709553",
+      "name": "Resolve Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9e9219ad-4842-461c-9d99-e45bff27f00e",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "llm_reply",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renamedOutput": true,
+              "outputKey": "llm_reply"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4646cdd8-c37c-4f02-8f68-20f296b01874",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "save_booking",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renamedOutput": true,
+              "outputKey": "save_booking"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b23a7f49-e433-4c0a-b1a7-df2546e22e2e",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "reply",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renamedOutput": true,
+              "outputKey": "reply"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1fc3583-bb8d-4716-a0f0-3d9839e10e3a",
+      "name": "Route Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ String($('Config').first().json.ollamaUrl).replace(/\\/+$/,'') + '/api/chat' }}",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.ollamaRequest) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "26392b60-7abb-401b-be07-f91a175b5eae",
+      "name": "Ollama Compose Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2960,
+        60
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Compose Final: merge the (optional) Ollama wording with verified data.\nconst r = $('Resolve Action').first().json;\nconst j = $input.first().json || {};\nconst c = r.compose;\nlet raw = (j.message && j.message.content) ? String(j.message.content).trim() : '';\nraw = raw.replace(/^[\"'“”]+|[\"'“”]+$/g, '').replace(/\\*\\*/g, '*').trim();\nconst numbersOk = s => (s.match(/\\d+/g) || []).every(n => String(c.allowedText).includes(n));\nconst limit = c.kind === 'results' ? 300 : 700;\nconst valid = (raw && raw.length <= limit && !/[$€£₦]/.test(raw) && numbersOk(raw)) ? raw : '';\n\nconst messages = [];\nif (c.kind === 'results') {\n  messages.push({ type: 'text', body: ((c.prefix || '') + (valid || c.fallbackIntro) + '\\n\\n' + c.listing + '\\n\\n' + c.cta).slice(0, 4000) });\n  (c.images || []).forEach(m => messages.push(m));\n} else {\n  messages.push({ type: 'text', body: ((c.prefix || '') + (valid || c.fallback) + '\\n\\n' + c.nudge).slice(0, 4000) });\n}\nreturn [{ json: { phone: r.phone, messages, stateRow: r.stateRow, customerRow: r.customerRow } }];"
+      },
+      "id": "55ecc4f0-1758-4db4-a6d0-6b9487e7ca06",
+      "name": "Compose Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3200,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.sheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Appointments",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "69250684-bb0e-4a8c-961d-d708a315fa27",
+      "name": "Read Appointments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2960,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare Appointment: duplicate + slot-conflict checks, ID generation, e-mail content.\nconst r = $('Resolve Action').first().json;\nconst cfg = $('Config').first().json;\nconst b = r.booking;\nconst norm = v => String(v === undefined || v === null ? '' : v).trim();\nconst digits = v => norm(v).replace(/\\D/g, '');\nconst pad = n => String(n).padStart(2, '0');\nconst normDate = v => { const s = norm(v); if (/^\\d{4}-\\d{2}-\\d{2}/.test(s)) return s.slice(0, 10); if (/^\\d{5}(\\.\\d+)?$/.test(s)) return new Date(Date.UTC(1899, 11, 30) + Math.floor(Number(s)) * 86400000).toISOString().slice(0, 10); return s; };\nconst normTime = v => { const s = norm(v); if (/^\\d{1,2}:\\d{2}/.test(s)) { const p = s.split(':'); return pad(+p[0]) + ':' + p[1].slice(0, 2); } if (s !== '' && !isNaN(Number(s)) && Number(s) >= 0 && Number(s) < 1) { const m = Math.round(Number(s) * 1440); return pad(Math.floor(m / 60)) + ':' + pad(m % 60); } return s; };\nconst esc = s => String(s).replace(/[&<>\"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[ch]));\n\nconst existing = $('Read Appointments').all().map(i => i.json || {}).filter(x => norm(x.AppointmentID));\nconst active = existing.filter(x => !/cancel/i.test(norm(x.Status)));\nconst sameSlot = x => normDate(x.PreferredDate) === b.date && normTime(x.PreferredTime) === b.time;\nconst sameProp = x => norm(x.PropertyID).toLowerCase() === b.propertyId.toLowerCase();\nconst dup = active.find(x => sameSlot(x) && sameProp(x) && digits(x.CustomerPhone) === digits(r.phone));\nconst clash = active.find(x => sameSlot(x) && (sameProp(x) || (b.agent && norm(x.AssignedAgent).toLowerCase() === b.agent.toLowerCase())));\n\nif (dup) {\n  return [{ json: { ok: false, phone: r.phone, stateRow: r.stateRow, customerRow: r.customerRow, messages: [{ type: 'text', body: `ℹ️ You already have a viewing request for *${b.title}* on ${b.prettyDate} at ${b.prettyTime} (Reference: *${norm(dup.AppointmentID)}*). Our agent will contact you shortly to confirm.\\n\\nTell me a location and budget if you'd like to keep browsing.` }] } }];\n}\nif (clash) {\n  return [{ json: { ok: false, phone: r.phone, stateRow: r.stateRowRetry, customerRow: Object.assign({}, r.customerRow, { ConversationStage: 'Booking' }), messages: [{ type: 'text', body: `😕 Sorry, that time slot has just been taken. Please choose another time on ${b.prettyDate}, or send a different date and time.` }] } }];\n}\n\nconst ids = new Set(existing.map(x => norm(x.AppointmentID)));\nconst stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');\nlet id; do { id = `APT-${stamp}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`; } while (ids.has(id));\n\nconst appointment = {\n  AppointmentID: id, CreatedAt: new Date().toISOString(), CustomerName: b.name, CustomerPhone: r.phone, CustomerEmail: b.email,\n  PropertyID: b.propertyId, PropertyTitle: b.title, PropertyLocation: b.locationText,\n  PreferredDate: b.date, PreferredTime: b.time, Status: 'Pending', AssignedAgent: b.agent || '',\n  CustomerEmailStatus: 'Pending', AdminEmailStatus: 'Pending'\n};\nconst biz = esc(cfg.businessName || 'Our team');\nconst row = (k, v) => `<tr><td style=\"padding:6px 12px;color:#555\">${k}</td><td style=\"padding:6px 12px\"><b>${v}</b></td></tr>`;\nconst customerHtml = `<div style=\"font-family:Arial,sans-serif;font-size:15px;color:#222\">\n<p>Hello ${esc(b.name)},</p>\n<p>Thank you for your interest. We have recorded your property viewing request:</p>\n<table style=\"border-collapse:collapse;background:#f6f8fa;border-radius:6px\">\n${row('Reference', esc(id))}${row('Property', esc(b.title) + ' (' + esc(b.propertyId) + ')')}${row('Location', esc(b.locationText))}${row('Requested date', esc(b.prettyDate))}${row('Requested time', esc(b.prettyTime))}\n</table>\n<p>Our agent${b.agent ? ' <b>' + esc(b.agent) + '</b>' : ''}${b.agentPhone ? ' (' + esc(b.agentPhone) + ')' : ''} will contact you shortly to confirm the visit.</p>\n<p>Kind regards,<br>${biz}</p></div>`;\nconst adminHtml = `<div style=\"font-family:Arial,sans-serif;font-size:15px;color:#222\">\n<p><b>New property viewing request</b></p>\n<table style=\"border-collapse:collapse;background:#f6f8fa;border-radius:6px\">\n${row('Appointment ID', esc(id))}${row('Customer', esc(b.name))}${row('WhatsApp', esc(r.phone))}${row('Email', esc(b.email))}${row('Property', esc(b.title) + ' (' + esc(b.propertyId) + ')')}${row('Location', esc(b.locationText))}${row('Requested date', esc(b.prettyDate))}${row('Requested time', esc(b.prettyTime))}${row('Assigned agent', esc(b.agent || 'Unassigned'))}${row('Status', 'Pending')}\n</table></div>`;\n\nreturn [{ json: { ok: true, appointment, emails: {\n  customer: { to: b.email, subject: 'Your Real Estate Viewing Request', html: customerHtml },\n  admin: { to: cfg.adminEmail, subject: 'New Property Viewing Appointment', html: adminHtml }\n} } }];"
+      },
+      "id": "a0e94645-e4d9-4e73-b05f-d5ea6b3b6e41",
+      "name": "Prepare Appointment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a7a75d84-bdfd-4cfa-a811-c7153996fb42",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "abfb8f96-e22c-44c5-975e-0342125100c7",
+      "name": "Slot OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $input.first().json.appointment }];"
+      },
+      "id": "da6af556-73a8-4fe2-ab1f-3a98d88a663d",
+      "name": "Appointment Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3680,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.sheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Appointments",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "cellFormat": "RAW",
+          "handlingExtraData": "ignoreIt"
+        }
+      },
+      "id": "c42e5c7e-7c82-40c7-a925-1f76ae4b5ec9",
+      "name": "Append Appointment",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3920,
+        240
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $('Prepare Appointment').first().json.emails.customer.to }}",
+        "subject": "={{ $('Prepare Appointment').first().json.emails.customer.subject }}",
+        "emailType": "html",
+        "message": "={{ $('Prepare Appointment').first().json.emails.customer.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "5573c3cc-cdbd-4380-be2a-ec8063df2d5a",
+      "name": "Send Customer Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        4160,
+        160
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_ME",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $('Prepare Appointment').first().json.emails.admin.to }}",
+        "subject": "={{ $('Prepare Appointment').first().json.emails.admin.subject }}",
+        "emailType": "html",
+        "message": "={{ $('Prepare Appointment').first().json.emails.admin.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "26354ffd-1bb3-4f72-b41c-9befe4a9d7a9",
+      "name": "Send Admin Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        4400,
+        160
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_ME",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Notification Status Row: record whether each e-mail was sent (separate from the booking itself).\nconst a = $('Prepare Appointment').first().json.appointment;\nconst c = $('Send Customer Email').first().json || {};\nconst d = $('Send Admin Email').first().json || {};\nconst st = j => (j && (j.id || j.threadId) && !j.error) ? 'Sent' : ('Failed: ' + String((j && j.error && (j.error.message || j.error)) || 'no response').slice(0, 120));\nreturn [{ json: Object.assign({}, a, { CustomerEmailStatus: st(c), AdminEmailStatus: st(d) }) }];"
+      },
+      "id": "85421285-81ac-4adc-b79f-57b87b24aec3",
+      "name": "Notification Status Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4640,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.sheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Appointments",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "AppointmentID"
+          ],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "cellFormat": "RAW",
+          "handlingExtraData": "ignoreIt"
+        }
+      },
+      "id": "16d7576f-23c7-41f1-9fcc-1ce05e4cd9b6",
+      "name": "Update Notification Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4880,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Booking Result: final WhatsApp confirmation (sent only after the appointment row was saved).\nconst r = $('Resolve Action').first().json;\nconst a = $('Prepare Appointment').first().json.appointment;\nconst n = $('Notification Status Row').first().json;\nconst b = r.booking;\nlet t = `✅ Thank you, ${b.name.split(' ')[0]}! Your viewing request has been recorded.\\n\\n` +\n  `🏡 *${b.title}* (${b.propertyId})\\n📍 ${b.locationText}\\n📅 ${b.prettyDate} at ${b.prettyTime}\\n🔖 Reference: *${a.AppointmentID}*\\n\\n` +\n  `Our agent${b.agent ? ' ' + b.agent : ''}${b.agentPhone ? ' (' + b.agentPhone + ')' : ''} will contact you shortly to confirm the visit.`;\nt += /^Sent/.test(n.CustomerEmailStatus) ? `\\n📧 A confirmation email is on its way to ${b.email}.` : '\\n(We could not send the confirmation email just now, but your request is saved.)';\nt += '\\n\\nTell me a location and budget any time if you\\'d like to keep browsing.';\nreturn [{ json: { phone: r.phone, messages: [{ type: 'text', body: t }], stateRow: r.stateRow, customerRow: r.customerRow } }];"
+      },
+      "id": "3fd47981-1ff3-4de3-8ea9-a3f5fe9dc0ec",
+      "name": "Booking Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5120,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Booking Error Result: the appointment row could not be saved -> tell the customer honestly, allow retry.\nconst r = $('Resolve Action').first().json;\nreturn [{ json: { phone: r.phone,\n  messages: [{ type: 'text', body: '⚠️ Sorry, I hit a technical problem while saving your booking, so it was *not* recorded. Please send your preferred time again in a moment and I\\'ll retry.' }],\n  stateRow: r.stateRowRetry, customerRow: Object.assign({}, r.customerRow, { ConversationStage: 'Booking' }) } }];"
+      },
+      "id": "a16a7b76-94e1-4fb2-b25c-431b03ecb62e",
+      "name": "Booking Error Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4160,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build Outbound: one WhatsApp Cloud API payload per message.\nconst e = $input.first().json;\nconst base = { messaging_product: 'whatsapp', recipient_type: 'individual', to: e.phone };\nreturn e.messages.map(m => ({ json: {\n  payload: m.type === 'image'\n    ? Object.assign({}, base, { type: 'image', image: { link: m.link, caption: String(m.caption || '').slice(0, 1000) } })\n    : Object.assign({}, base, { type: 'text', text: { preview_url: false, body: String(m.body).slice(0, 4000) } }),\n  stateRow: e.stateRow, customerRow: e.customerRow\n} }));"
+      },
+      "id": "dfaee367-5c18-4b6b-99b6-09549dc9765c",
+      "name": "Build Outbound",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://graph.facebook.com/' + $('Config').first().json.graphApiVersion + '/' + $('Config').first().json.phoneNumberId + '/messages' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 600
+            }
+          }
+        }
+      },
+      "id": "ec63b439-eaf5-415d-bed2-fb569c933e25",
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5640,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "WhatsApp Cloud API Token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('Build Outbound').first().json.stateRow }];"
+      },
+      "id": "126f192a-6121-42a2-bec0-78ae6bf73e4e",
+      "name": "Prepare State Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.sheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ConversationState",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "CustomerPhone"
+          ],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "cellFormat": "RAW",
+          "handlingExtraData": "ignoreIt"
+        }
+      },
+      "id": "ddbe2888-ac65-4ba9-a37b-e088f836608b",
+      "name": "Save State",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        6120,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('Build Outbound').first().json.customerRow }];"
+      },
+      "id": "0757eee0-8356-487e-811f-d0c1a754873f",
+      "name": "Prepare Customer Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6360,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Config').first().json.sheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Customers",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "CustomerPhone"
+          ],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "cellFormat": "RAW",
+          "handlingExtraData": "ignoreIt"
+        }
+      },
+      "id": "b93a078b-8e2a-423f-bc5f-9041c25c9d51",
+      "name": "Save Customer",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        6600,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Setup (see README)\n1. Edit the **Config** node (sheet ID, phone number ID, admin email, Ollama URL/model).\n2. Assign credentials: Google Sheets, Gmail, and *WhatsApp Cloud API Token* (Header Auth: `Authorization` = `Bearer <token>`).\n3. Activate the workflow, then use the **Production** webhook URL (path `/webhook/whatsapp`) in Meta.",
+        "height": 230,
+        "width": 560,
+        "color": 5
+      },
+      "id": "ef024575-1322-408f-a243-ca389ee823e9",
+      "name": "Note 35",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Meta webhook verification\nGET requests with `hub.challenge` are answered here. The POST webhook replies 200 immediately so Meta never retries because Ollama is slow.",
+        "height": 150,
+        "width": 560,
+        "color": 6
+      },
+      "id": "06aca2d9-ed3a-4839-aba4-2876bbf6ed75",
+      "name": "Note 36",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -130
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Load context\nOne read per tab (Google Sheets). Phone numbers are matched as digits only.",
+        "height": 110,
+        "width": 760,
+        "color": 7
+      },
+      "id": "6a32c5f6-1337-4ff8-8e6e-d186cf2b8b64",
+      "name": "Note 37",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Brain\nOllama extracts intent/fields (JSON). **Resolve Action** is a deterministic state machine: n8n validates everything, Ollama never writes to the sheet.",
+        "height": 150,
+        "width": 760,
+        "color": 7
+      },
+      "id": "328f3dfd-797a-437f-be48-0b885ad01675",
+      "name": "Note 38",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        130
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Booking\nDuplicate + slot-conflict check, save appointment, then two Gmail notifications. Email failures are recorded in the sheet but never block the booking or the WhatsApp reply.",
+        "height": 130,
+        "width": 2000,
+        "color": 4
+      },
+      "id": "f907268e-f679-4f1c-b7bc-a57e496420ee",
+      "name": "Note 39",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2940,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Reply + persist\nWhatsApp message(s) go out first, then ConversationState and Customers are upserted.",
+        "height": 110,
+        "width": 1300,
+        "color": 3
+      },
+      "id": "00ccb0f8-eb5e-4546-9ce9-371f9363ad58",
+      "name": "Note 40",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5380,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "WhatsApp Verify (GET)": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Webhook (POST)": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Is Verification?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Verification?": {
+      "main": [
+        [
+          {
+            "node": "Verify Token OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Incoming",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Token OK?": {
+      "main": [
+        [
+          {
+            "node": "Respond Challenge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Forbidden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Incoming": {
+      "main": [
+        [
+          {
+            "node": "Read Conversation State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Conversation State": {
+      "main": [
+        [
+          {
+            "node": "Read Customers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Customers": {
+      "main": [
+        [
+          {
+            "node": "Read Properties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Properties": {
+      "main": [
+        [
+          {
+            "node": "Analyze Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Message": {
+      "main": [
+        [
+          {
+            "node": "Needs LLM?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs LLM?": {
+      "main": [
+        [
+          {
+            "node": "Ollama Extract Intent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resolve Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Extract Intent": {
+      "main": [
+        [
+          {
+            "node": "Resolve Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Action": {
+      "main": [
+        [
+          {
+            "node": "Route Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Action": {
+      "main": [
+        [
+          {
+            "node": "Ollama Compose Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Appointments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Outbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Compose Reply": {
+      "main": [
+        [
+          {
+            "node": "Compose Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Appointments": {
+      "main": [
+        [
+          {
+            "node": "Prepare Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Appointment": {
+      "main": [
+        [
+          {
+            "node": "Slot OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slot OK?": {
+      "main": [
+        [
+          {
+            "node": "Appointment Row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Outbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Appointment Row": {
+      "main": [
+        [
+          {
+            "node": "Append Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Appointment": {
+      "main": [
+        [
+          {
+            "node": "Send Customer Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Booking Error Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Customer Email": {
+      "main": [
+        [
+          {
+            "node": "Send Admin Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Admin Email": {
+      "main": [
+        [
+          {
+            "node": "Notification Status Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification Status Row": {
+      "main": [
+        [
+          {
+            "node": "Update Notification Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Notification Status": {
+      "main": [
+        [
+          {
+            "node": "Booking Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Final": {
+      "main": [
+        [
+          {
+            "node": "Build Outbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Booking Result": {
+      "main": [
+        [
+          {
+            "node": "Build Outbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Booking Error Result": {
+      "main": [
+        [
+          {
+            "node": "Build Outbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Outbound": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Prepare State Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare State Row": {
+      "main": [
+        [
+          {
+            "node": "Save State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save State": {
+      "main": [
+        [
+          {
+            "node": "Prepare Customer Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Customer Row": {
+      "main": [
+        [
+          {
+            "node": "Save Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "timezone": "Africa/Lagos",
+    "executionTimeout": 900
+  },
+  "pinData": {},
+  "tags": []
+}
